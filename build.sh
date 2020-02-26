@@ -2,6 +2,10 @@
 # Script to build image for qemu.
 # Author: Siddhant Jajoo.
 
+<<<<<<< HEAD
+=======
+set -e
+>>>>>>> 539b45d (set -e Update)
 git submodule init
 git submodule sync
 git submodule update
