@@ -3,9 +3,12 @@
 # Author: Siddhant Jajoo.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 set -e
 >>>>>>> 539b45d (set -e Update)
+=======
+>>>>>>> 84bdaab (Move set -e)
 git submodule init
 git submodule sync
 git submodule update
