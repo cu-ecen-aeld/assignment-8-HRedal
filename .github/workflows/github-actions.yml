@@ -1,40 +1,16 @@
 name: assignment-test
-on:
-    push:
-        tags-ignore:
-            - '*'
-        branches:
-            - '*'
+on: [push]
 jobs:
-      full-test:  
+    full-test:
+        container: cuaesd/aesd-autotest:assignment6-yocto
         runs-on: self-hosted
+        timeout-minutes: 120
         steps:
-          - uses: actions/checkout@v3
-            with:
-              clean: false
-              submodules: 'recursive'
-          - uses: webfactory/ssh-agent@v0.5.4
-            with:
-                 ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          - name: Run build
-            timeout-minutes: 600
-            run: |
-               docker run --rm \
-                 -v $SSH_AUTH_SOCK:/ssh-agent -e SSH_AUTH_SOCK=/ssh-agent \
-                 -e GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" \
-                 -v ${GITHUB_WORKSPACE}:${GITHUB_WORKSPACE} \
-                 cuaesd/aesd-autotest:assignment6-yocto \
-                 --workdir=${GITHUB_WORKSPACE} \
-                 ./build.sh
-          - name: Cleanup
-            if: always()
-            run: |
-              ssh-add -D
+          - uses: actions/checkout@v2
+            name: Checkout submodules
+          - uses: textbook/git-checkout-submodule-action@2.1.1
           - name: Run full test
-            timeout-minutes: 15
-            run: |
-               docker run --rm \
-                 -v ${GITHUB_WORKSPACE}:${GITHUB_WORKSPACE} \
-                 cuaesd/aesd-autotest:assignment6-yocto \
-                 --workdir=${GITHUB_WORKSPACE} \
-                 ./full-test.sh
+            env:
+              SSH_PRIVATE_KEY_BASE64: ${{ secrets.SSH_PRIVATE_KEY_BASE64 }}
+            run: ./full-test.sh
+
