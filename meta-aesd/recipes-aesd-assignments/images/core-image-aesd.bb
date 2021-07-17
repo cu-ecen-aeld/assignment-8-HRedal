@@ -18,4 +18,9 @@ IMAGE_INSTALL_append = " aesd-assignments"
 >>>>>>> f5c401e (Comment out aesd-assignments package initially)
 =======
 CORE_IMAGE_EXTRA_INSTALL += " openssh"
+<<<<<<< HEAD
 >>>>>>> 066fb0b (Adding openssh package)
+=======
+inherit extrausers
+EXTRA_USERS_PARAMS = "usermod -P root root;"
+>>>>>>> cbedb23 (Set the username/password to root/root)
