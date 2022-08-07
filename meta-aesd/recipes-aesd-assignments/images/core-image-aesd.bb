@@ -1,5 +1,5 @@
 inherit core-image
-<<<<<<< HEAD
+
 #CORE_IMAGE_EXTRA_INSTALL += "aesd-assignments"
 CORE_IMAGE_EXTRA_INSTALL += "openssh"
 inherit extrausers
@@ -12,15 +12,4 @@ inherit extrausers
 PASSWD = "\$5\$2WoxjAdaC2\$l4aj6Is.EWkD72Vt.byhM5qRtF9HcCM/5YpbxpmvNB5"
 EXTRA_USERS_PARAMS = "usermod -p '${PASSWD}' root;"
 IMAGE_INSTALL_append = " aesd-assignments"
-=======
-#IMAGE_INSTALL_append = " aesd-assignments"
-<<<<<<< HEAD
->>>>>>> f5c401e (Comment out aesd-assignments package initially)
-=======
-CORE_IMAGE_EXTRA_INSTALL += " openssh"
-<<<<<<< HEAD
->>>>>>> 066fb0b (Adding openssh package)
-=======
 inherit extrausers
-EXTRA_USERS_PARAMS = "usermod -P root root;"
->>>>>>> cbedb23 (Set the username/password to root/root)
