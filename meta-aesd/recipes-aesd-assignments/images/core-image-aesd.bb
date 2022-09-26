@@ -1,5 +1,8 @@
 inherit core-image
+<<<<<<< HEAD
 
+=======
+>>>>>>> d3d5779 (Fix image reference)
 #CORE_IMAGE_EXTRA_INSTALL += "aesd-assignments"
 CORE_IMAGE_EXTRA_INSTALL += "openssh"
 inherit extrausers
