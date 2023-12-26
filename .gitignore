@@ -9,3 +9,7 @@ test.sh.log
 aesdsocket
 server/aesdsocket
 server/valgrind-out.txt
+build
+.vscode
+valgrind-out.txt
+test.sh.log
