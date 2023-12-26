@@ -1,26 +1,15 @@
 name: assignment-test
-on: 
-    push:
-        tags-ignore:
-            - '*'
-        branches:
-            - '*'
+on: [push]
 jobs:
-    unit-test:
-        container: cuaesd/aesd-autotest:assignment6
-        runs-on: self-hosted
-        steps:
-          - uses: actions/checkout@v2
-          - name: Checkout submodules
-            run : git submodule update --init --recursive
-          - name: Run unit test
-            run: ./unit-test.sh
     full-test:
-        container: cuaesd/aesd-autotest:assignment6
+        container: cuaesd/aesd-autotest:assignment6-yocto
         runs-on: self-hosted
+        timeout-minutes: 120
         steps:
           - uses: actions/checkout@v2
-          - name: Checkout submodules
-            run : git submodule update --init --recursive
+            name: Checkout submodules
+          - uses: textbook/git-checkout-submodule-action@2.1.1
           - name: Run full test
+            env:
+              SSH_PRIVATE_KEY_BASE64: ${{ secrets.SSH_PRIVATE_KEY_BASE64 }}
             run: ./full-test.sh
