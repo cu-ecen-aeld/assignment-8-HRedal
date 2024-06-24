@@ -2,7 +2,6 @@
 # Script to build image for qemu.
 # Author: Siddhant Jajoo.
 
-set -e
 git submodule init
 git submodule sync
 git submodule update
@@ -22,7 +21,6 @@ if [ $local_conf_info -ne 0 ];then
 else
 	echo "${CONFLINE} already exists in the local.conf file"
 fi
-
 
 bitbake-layers show-layers | grep "meta-aesd" > /dev/null
 layer_info=$?
