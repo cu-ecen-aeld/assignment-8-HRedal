@@ -1,0 +1,35 @@
+#!/bin/sh
+# $Id: aeadchar_load,v 1.0 2024/06/28 $
+# scull driver is used as template
+module="aesdchar"
+device="aesdchar"
+mode="664"
+cd `dirname $0`
+
+# Group: since distributions do it differently, look for wheel or use staff
+if grep -q '^staff:' /etc/group; then
+    group="staff"
+else
+    group="wheel"
+fi
+
+# invoke insmod with all arguments we got
+# and use a pathname, as insmod doesn't look in . by default
+if [ -e ${module}.ko ]; then
+    echo "Local built file already exist. Loading local built file ${module}.ko"
+    insmod ./$module.ko $* || exit 1
+else
+    echo "Local file ${module}.ko not found, attempting to load module with modprobe"
+    modprobe ${module} || exit 1
+fi
+
+# retrieve major number
+major=$(awk "\$2==\"$module\" {print \$1}" /proc/devices)
+
+# Remove stale nodes and replace them, then give gid and perms
+# Usually the script is shorter, it's scull that has several devices in it.
+
+rm -f /dev/${device}
+mknod /dev/${device} c $major 0
+chgrp $group /dev/${device} 
+chmod $mode  /dev/${device}

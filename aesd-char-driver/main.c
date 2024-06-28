@@ -32,7 +32,7 @@ int aesd_open(struct inode *inode, struct file *filp)
     /**
      * TODO: handle open
      */
-    filp->private_data = container_of(inode->i_cdev, struct aesd_dev, cdev);
+    filp->private_data = container_of(inode->i_cdev, struct aesd_dev, cdevM);
     return 0;
 }
 
@@ -45,14 +45,14 @@ int aesd_release(struct inode *inode, struct file *filp)
     return 0;
 }
 
-ssize_t aesd_read(struct file   *filp, 
-                  char __user   *buf,
+ssize_t aesd_read(struct file*  filp, 
+                  char __user*  buf,
                   size_t        count,
                   loff_t *      f_pos)
 {
     ssize_t                         retval              = 0;
     struct aesd_buffer_entry*       theBufferEntry      = NULL;
-    struct aesd_circular_buffer*    theBuffer           = NULL;
+    // struct aesd_circular_buffer*    theBuffer           = NULL;
     struct aesd_dev*                theAesdDev          = NULL;
     ssize_t                         theOffset           =   0;
     ssize_t                         theBytesNotCopied   = 0;
@@ -70,31 +70,31 @@ ssize_t aesd_read(struct file   *filp,
 
     theAesdDev = (struct aesd_dev*) filp->private_data;
     
-    if (mutex_lock_interruptible(theAesdDev->mutexM) != 0)
+    if (mutex_lock_interruptible(&theAesdDev->mutexM) != 0)
     {
         return -EINTR;
     }
 
     
-    theBufferEntry = aesd_circular_buffer_find_entry_offset_for_fpos(theBuffer,
-                                                                     f_pos,
-                                                                     theOffset);
+    theBufferEntry = aesd_circular_buffer_find_entry_offset_for_fpos(&(theAesdDev->bufferM),
+                                                                     *f_pos,
+                                                                     &theOffset);
     if (theBufferEntry == 0)
     {
-        mutex_unlock(theAesdDev->mutexM);
+        mutex_unlock(&theAesdDev->mutexM);
         return retval;
     }
 
-    if (count > (theBufferEntry->size - byte_offset))
+    if (count > (theBufferEntry->size - theOffset))
     {
-        count = theBufferEntry->size - byte_offset;
+        count = theBufferEntry->size - theOffset;
     }
 
-    theBytesNotCopied = copy_to_user(buf, (theBufferEntry->buffptr + byte_offset), count);
+    theBytesNotCopied = copy_to_user(buf, (theBufferEntry->buffptr + theOffset), count);
     retval = count - theBytesNotCopied;
     *f_pos += retval;
     
-    mutex_unlock(theAesdDev->mutexM);
+    mutex_unlock(&theAesdDev->mutexM);
 
     return retval;
 }
@@ -119,7 +119,7 @@ ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
         return -ERESTARTSYS;
     }
 
-    if (cout == 0)
+    if (count == 0)
     {
         return 0;
     }
@@ -136,16 +136,20 @@ ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
     }
     else
     {
-        theAesdDev->entryM.buffptr = krealloc(theAesdDev.buffptr, (theAesdDev.size + count) * sizeof(char), GFP_KERNEL);
+        theAesdDev->entryM.buffptr = krealloc(theAesdDev->entryM.buffptr,
+                                              (theAesdDev->entryM.size + count) * sizeof(char),
+                                              GFP_KERNEL);
     }
 
     if (theAesdDev->entryM.buffptr == NULL)
     {
-        mutex_unlock(&(device->mutex));
+        mutex_unlock(&(theAesdDev->mutexM));
         return retval;
     }
 
-    theBytesNotCopied = copy_from_user((void *)(theAesdDev->entryM.buffptr + theAesdDev->entryM.size), buf, count);
+    theBytesNotCopied = copy_from_user((void *)(theAesdDev->entryM.buffptr + theAesdDev->entryM.size),
+                                       buf,
+                                       count);
     retval = count - theBytesNotCopied;
     theAesdDev->entryM.size += retval;
 
@@ -177,10 +181,10 @@ static int aesd_setup_cdev(struct aesd_dev *dev)
 {
     int err, devno = MKDEV(aesd_major, aesd_minor);
 
-    cdev_init(&dev->cdev, &aesd_fops);
-    dev->cdev.owner = THIS_MODULE;
-    dev->cdev.ops = &aesd_fops;
-    err = cdev_add (&dev->cdev, devno, 1);
+    cdev_init(&dev->cdevM, &aesd_fops);
+    dev->cdevM.owner = THIS_MODULE;
+    dev->cdevM.ops = &aesd_fops;
+    err = cdev_add (&dev->cdevM, devno, 1);
     if (err) {
         printk(KERN_ERR "Error %d adding aesd cdev", err);
     }
@@ -191,8 +195,9 @@ static int aesd_setup_cdev(struct aesd_dev *dev)
 
 int aesd_init_module(void)
 {
-    dev_t dev = 0;
-    int result;
+    dev_t dev      = 0;
+    int   result   = 0;
+    
     result = alloc_chrdev_region(&dev, aesd_minor, 1,
             "aesdchar");
     aesd_major = MAJOR(dev);
@@ -205,8 +210,8 @@ int aesd_init_module(void)
     /**
      * TODO: initialize the AESD specific portion of the device
      */
-     mutex_init(aesd_device->mutexM);
-     aesd_circular_buffer_init(aesd_device->bufferM);
+    mutex_init(&aesd_device.mutexM);
+    aesd_circular_buffer_init(&aesd_device.bufferM);
 
     result = aesd_setup_cdev(&aesd_device);
 
@@ -219,14 +224,17 @@ int aesd_init_module(void)
 
 void aesd_cleanup_module(void)
 {
-    dev_t devno = MKDEV(aesd_major, aesd_minor);
+    uint8_t                    theIndex;
+    struct  aesd_buffer_entry* theEntry = NULL;
 
-    cdev_del(&aesd_device.cdev);
+    dev_t   devno = MKDEV(aesd_major, aesd_minor);
+
+    cdev_del(&aesd_device.cdevM);
 
     /**
      * TODO: cleanup AESD specific poritions here as necessary
      */
-    AESD_CIRCULAR_BUFFER_FOREACH(theEntry, &aesd_device.bufferM, index) 
+    AESD_CIRCULAR_BUFFER_FOREACH(theEntry, &aesd_device.bufferM, theIndex) 
     {
         kfree(theEntry->buffptr);
     }
@@ -234,7 +242,6 @@ void aesd_cleanup_module(void)
 
     unregister_chrdev_region(devno, 1);
 }
-
 
 
 module_init(aesd_init_module);
