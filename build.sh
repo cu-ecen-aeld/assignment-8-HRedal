@@ -22,6 +22,7 @@ else
 	echo "${CONFLINE} already exists in the local.conf file"
 fi
 
+
 bitbake-layers show-layers | grep "meta-aesd" > /dev/null
 layer_info=$?
 

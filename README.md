@@ -50,3 +50,5 @@ This can be done on a system with kernel headers installed using:
 ```
 ln -s /usr/src/linux-headers-`uname -r`/ linux_source_cdt
 ```
+# yocto-assignments-base
+Base repository for AESD Yocto assignments
