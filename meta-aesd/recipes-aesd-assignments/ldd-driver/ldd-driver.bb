@@ -11,11 +11,12 @@
 LICENSE = "Unknown"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=f098732a73b5f6f3430472f5b094ffdb"
 
-SRC_URI = "git://github.com/cu-ecen-aeld/ldd3.git;protocol=https;branch=master"
+#SRC_URI = "git://github.com/cu-ecen-aeld/ldd3.git;protocol=https;branch=master"
+SRC_URI = "git://github.com/cu-ecen-aeld/assignment-7-HRedal.git;protocol=https;branch=master"
 
 # Modify these as desired
 PV = "1.0+git${SRCPV}"
-SRCREV = "5c3cae6ddc96b8645dfa6f6bc4ddbba08aae8789"
+SRCREV = "5cff85c900f7577e2c5e38abe5d6027eac5b0872"
 
 S = "${WORKDIR}/git"
 
