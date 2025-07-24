@@ -1,11 +1,13 @@
 SUMMARY = "This recipe is used for building the aesd-char-driver"
 DESCRIPTION = "This recipe is used for building the aesd-char-driver"
 LICENSE = "Unknown"
-LIC_FILES_CHKSUM = "file://${WORKDIR}/aesd-char-driver/LICENSE;md5=f098732a73b5f6f3430472f5b094ffdb"
+#LIC_FILES_CHKSUM = "file://${WORKDIR}/aesd-char-driver/LICENSE;md5=f098732a73b5f6f3430472f5b094ffdb"
+LIC_FILES_CHKSUM = "file://LICENSE;md5=df7bb5369afdd26d1b752579f057a572"
 
 inherit module
 
-SRC_URI = "git://git@github.com/cu-ecen-aeld/assignment-8-HRedal;protocol=ssh;branch=master"
+SRC_URI = "git://git@github.com/cu-ecen-aeld/assignment-8-HRedal;protocol=ssh;branch=master \
+		   file://aesd-char-driver_init"
 SRCREV = "b31d8c64cdffb7ee4bde9eea0968051b5dd03117"
 PV = "1.0+git${SRCPV}"
 
