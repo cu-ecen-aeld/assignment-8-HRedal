@@ -12,10 +12,10 @@ LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=f098732a73b5f6f3430472f5b094ffdb"
 
 SRC_URI = "git://github.com/cu-ecen-aeld/assignment-7-HRedal.git;protocol=ssh;branch=master \
-           file://0001-Update-Makefile.patch \
            file://ldd-misc-modules \
            file://module_load.sh \
            file://module_unload.sh \
+           file://0001-Finishing-misc-modules-recipe.patch \
            "
 
 # Modify these as desired
