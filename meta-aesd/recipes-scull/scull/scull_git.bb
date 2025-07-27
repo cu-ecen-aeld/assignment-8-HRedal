@@ -11,7 +11,12 @@
 LICENSE = "Unknown"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=f098732a73b5f6f3430472f5b094ffdb"
 
-SRC_URI = "git://github.com/cu-ecen-aeld/assignment-7-HRedal.git;protocol=ssh;branch=master"
+SRC_URI = "git://git@github.com/cu-ecen-aeld/assignment-7-HRedal.git;protocol=ssh;branch=master \
+           file://0001-Previous-step-to-modify-Makefile-of-scull.patch \
+           file://ldd-scull \ 
+           file://scull_load.sh \
+           file://scull_unload.sh \  
+           "
 
 # Modify these as desired
 PV = "1.0+git${SRCPV}"
@@ -20,7 +25,6 @@ SRCREV = "5cff85c900f7577e2c5e38abe5d6027eac5b0872"
 S = "${WORKDIR}/git"
 
 inherit module
-
 # Adding reference class which handles startup
 inherit update-rc.d
 # Flag package as one that uses init scripts
@@ -29,6 +33,7 @@ INITSCRIPT_NAME:${PN} = "ldd-scull"
 # Specify files to be packaged
 FILES:${PN} += "${bindir}/scull_load.sh ${bindir}/scull_unload.sh"
 FILES:${PN} += "${sysconfdir}/init.d/ldd-scull"
+TARGET_LDFLAGS += "-pthread -lrt"
 
 EXTRA_OEMAKE:append:task-install = " -C ${STAGING_KERNEL_DIR} M=${S}/scull"
 EXTRA_OEMAKE += "KERNELDIR=${STAGING_KERNEL_DIR}"

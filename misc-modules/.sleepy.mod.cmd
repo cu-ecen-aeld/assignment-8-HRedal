@@ -1,0 +1,1 @@
+savedcmd_/home/ecehrp/LinuxSystemProgramming/IntroductionToYocto/assignment-8-HRedal/misc-modules/sleepy.mod := printf '%s\n'   sleepy.o | awk '!x[$$0]++ { print("/home/ecehrp/LinuxSystemProgramming/IntroductionToYocto/assignment-8-HRedal/misc-modules/"$$0) }' > /home/ecehrp/LinuxSystemProgramming/IntroductionToYocto/assignment-8-HRedal/misc-modules/sleepy.mod
