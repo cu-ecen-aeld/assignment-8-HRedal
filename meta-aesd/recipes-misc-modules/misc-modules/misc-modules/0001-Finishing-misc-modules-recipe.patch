@@ -1,0 +1,23 @@
+From fd1dd44e84d594e113699ef770aea0c858755154 Mon Sep 17 00:00:00 2001
+From: Hector Redal <hector.redal@ericsson.com>
+Date: Mon, 28 Jul 2025 17:46:31 +0200
+Subject: [PATCH] Finishing misc-modules recipe
+
+---
+ Makefile | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 7b08c49..0966da5 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,8 +1,5 @@
+ 
+-SUBDIRS =  misc-progs misc-modules \
+-           skull scull scullc scullp lddbus sculld scullv shortprint simple tty \
+-	   pci usb\
+-	   sbull snull short
++SUBDIRS =  misc-modules
+ 
+ all: subdirs
+ 
