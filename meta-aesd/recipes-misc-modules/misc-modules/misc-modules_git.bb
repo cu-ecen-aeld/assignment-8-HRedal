@@ -15,7 +15,6 @@ SRC_URI = "git://github.com/cu-ecen-aeld/assignment-7-HRedal.git;protocol=ssh;br
            file://ldd-misc-modules \
            file://module_load.sh \
            file://module_unload.sh \
-           file://0001-Finishing-misc-modules-recipe.patch \
            "
 
 # Modify these as desired
