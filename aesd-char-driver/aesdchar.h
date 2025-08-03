@@ -34,7 +34,6 @@ struct aesd_dev
     struct aesd_circular_buffer    bufferM;
     struct aesd_buffer_entry       entryM;
     size_t                         write_buffer_size; /* Amount of data currently stored in buffer*/
-    size_t                         buff_size; //Total size of buff     
 };
 
 

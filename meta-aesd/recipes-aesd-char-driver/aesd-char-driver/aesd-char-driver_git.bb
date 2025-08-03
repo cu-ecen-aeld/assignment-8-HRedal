@@ -6,7 +6,7 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=df7bb5369afdd26d1b752579f057a572"
 
 inherit module
 
-SRC_URI = "git://git@github.com/cu-ecen-aeld/assignment-9-HRedal;protocol=ssh;branch=master \
+SRC_URI = "git://git@github.com/cu-ecen-aeld/assignment-8-HRedal;protocol=ssh;branch=master \
 		   file://aesd-char-driver_init"
 SRCREV = "b2df3fc46f6b78b820651447cc5697704b43a4a3"
 PV = "1.0+git${SRCPV}"

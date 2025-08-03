@@ -24,7 +24,7 @@
 int aesd_major =   0; // use dynamic major
 int aesd_minor =   0;
 
-MODULE_AUTHOR("Hector Redal"); /** TODO: fill in your name **/
+MODULE_AUTHOR("Hector Redal");
 MODULE_LICENSE("Dual BSD/GPL");
 
 struct aesd_dev aesd_device;
@@ -32,19 +32,16 @@ struct aesd_dev aesd_device;
 int aesd_open(struct inode *inode, struct file *filp)
 {
     PDEBUG("open");
-    /**
-     * TODO: handle open
-     */
+
     filp->private_data = container_of(inode->i_cdev, struct aesd_dev, cdevM);
     return 0;
 }
 
-int aesd_release(struct inode *inode, struct file *filp)
+int aesd_release(struct inode *inode, struct file *fileP)
 {
     PDEBUG("release");
-    /**
-     * TODO: handle release
-     */
+
+    fileP->private_data = NULL;
     return 0;
 }
 
@@ -68,6 +65,7 @@ ssize_t aesd_read(struct file*  filp,
         (buf == NULL)      ||
         (count == 0))
     {
+        PDEBUG("Invalid arguments.");
         return -ERESTARTSYS;
     }
 
@@ -75,6 +73,7 @@ ssize_t aesd_read(struct file*  filp,
     
     if (mutex_lock_interruptible(&theAesdDev->mutexM) != 0)
     {
+        PDEBUG("Failed to get the lock exclusively.");
         return -EINTR;
     }
 
@@ -94,6 +93,12 @@ ssize_t aesd_read(struct file*  filp,
     }
 
     theBytesNotCopied = copy_to_user(buf, (theBufferEntry->buffptr + theOffset), count);
+    if(theBytesNotCopied != 0)
+    {
+        mutex_unlock(&theAesdDev->mutexM);
+        return -EFAULT;
+    }
+    
     retval = count - theBytesNotCopied;
     *f_pos += retval;
     
@@ -174,12 +179,32 @@ ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
 }
 
 loff_t aesd_llseek(struct file *fileP, loff_t offset, int whence) {
-    struct aesd_dev*    theAesdDev  = fileP->private_data;
-    loff_t              retval      = -EINVAL;
+    struct aesd_dev*            theAesdDev  = fileP->private_data;
+    loff_t                      retval      = -EINVAL;
+    uint8_t                     index       = 0;
+    struct aesd_buffer_entry*   entry       = NULL;
+    loff_t                      total_size  = 0;
     PDEBUG("Attempting to adjust offset by: %lld", offset);
 
-    mutex_lock(&theAesdDev->mutexM);
-    retval = fixed_size_llseek(fileP, offset, whence, theAesdDev->buff_size);
+    if (fileP == NULL)
+    {
+      return retval;
+    }
+
+    if (mutex_lock_interruptible(&theAesdDev->mutexM)) 
+    {
+       PDEBUG("Failed to get the mutex.");
+       retval = -ERESTARTSYS;
+       return retval;
+    }
+    PDEBUG("Mutex got (locked).");
+    
+    AESD_CIRCULAR_BUFFER_FOREACH(entry, &theAesdDev->bufferM, index)
+    {
+       total_size += entry->size;
+    }
+
+    retval = fixed_size_llseek(fileP, offset, whence, total_size);
 
     mutex_unlock(&theAesdDev->mutexM);
 
@@ -188,19 +213,41 @@ loff_t aesd_llseek(struct file *fileP, loff_t offset, int whence) {
 long aesd_adjust_file_offset(struct file*   filp, 
                              unsigned int   cmd,
                              unsigned int   offset) {
+
     struct aesd_dev*    dev             = filp->private_data;
     int                 proposed_cmd    = (dev->bufferM.out_offs + cmd) % AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;
     int                 new_fpos        = 0;
 
+    if (dev == NULL)
+    {
+        return -EINVAL;
+    } 
+    
     PDEBUG("cmd: %d offset: %d", cmd, offset);
     PDEBUG("current buffer: %d proposed buffer: %d", dev->bufferM.out_offs, proposed_cmd);
-    if (cmd > AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED) {
+
+    PDEBUG("Locking mutex.");
+    // Lock the mutex 
+    if (mutex_lock_interruptible(&dev->mutexM)) {
+        // Failed to acquire mutex
+        PDEBUG("Failed to lock mutex");
+        return -ERESTARTSYS; 
+    }
+    PDEBUG("Mutex locked");
+
+    if (cmd > AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED)
+    {
+        mutex_unlock(&dev->mutexM);
         return -EINVAL;
     }
-    else if (dev->bufferM.entry[proposed_cmd].buffptr == NULL) {
+    else if (dev->bufferM.entry[proposed_cmd].buffptr == NULL)
+    {
+        mutex_unlock(&dev->mutexM);
         return -EINVAL;
     }
-    else if (dev->bufferM.entry[proposed_cmd].size < offset) {
+    else if (dev->bufferM.entry[proposed_cmd].size < offset)
+    {
+        mutex_unlock(&dev->mutexM);
         return -EINVAL;
     }
     else {
@@ -231,6 +278,8 @@ long aesd_ioctl(struct file*    filp,
             }
             break;
         default:
+            // Invalid ioctl command
+           retval = -ENOTTY;
            break; 
     }
 
